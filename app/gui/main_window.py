@@ -30,6 +30,9 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("System Monitor")
         self.setGeometry(100, 100, 500, 300)
 
+        # Флаг для записи данных
+        self.is_recording = False
+
         # Устанавливаем стиль всему окну:
         self.setStyleSheet(
             """
@@ -42,22 +45,17 @@ class MainWindow(QMainWindow):
         )
         self.main_layout = QVBoxLayout()
 
+        # ========= Верхняя панель с кнопкой истории =========
         top_layout = QHBoxLayout()
-
-        # Кнопка "history"
         self.history_button = QPushButton()
         self.history_button.setIcon(QIcon(icon_path))
         self.history_button.setFixedSize(60, 60)
         self.history_button.clicked.connect(show_history)
-
-        # Добавляем "растяжку" слева, чтобы кнопка ушла вправо
         top_layout.addStretch()
         top_layout.addWidget(self.history_button)
-
-        # Вкладываем горизонтальный лейаут top_layout в главный main_layout
         self.main_layout.addLayout(top_layout)
 
-        # ========= 3. Поле для настройки интервала обновления =========
+        # ========= Поле для настройки интервала обновления =========
         self.interval_label = QLabel("Интервал обновления (сек):")
         self.interval_spinbox = QSpinBox()
         self.interval_spinbox.setRange(1, 60)
@@ -65,7 +63,7 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.interval_label)
         self.main_layout.addWidget(self.interval_spinbox)
 
-        # ========= 4. Остальные элементы (вниз, под шапкой)  =========
+
         self.timer_label = QLabel("00:00")
         self.timer_label.setStyleSheet("font-size: 14px; color: gray;")
         self.timer = QTimer(self)
@@ -86,7 +84,7 @@ class MainWindow(QMainWindow):
         self.update_timer = QTimer(self)
         self.update_timer.timeout.connect(self.update_system_stats)
 
-        # Добавляем остальные виджеты в главный лейаут
+        # Добавляем элементы в главный лейаут
         self.main_layout.addWidget(self.cpu_label)
         self.main_layout.addWidget(self.ram_label)
         self.main_layout.addWidget(self.disk_label)
@@ -94,47 +92,40 @@ class MainWindow(QMainWindow):
         self.main_layout.addWidget(self.start_button)
         self.main_layout.addWidget(self.stop_button)
 
-        # ========= 5. Создаём контейнер и настраиваем главное окно  =========
+        # Создаём контейнер и настраиваем главное окно
         container = QWidget()
         container.setLayout(self.main_layout)
         self.setCentralWidget(container)
 
+        # Старт обновления системных данных
+        self.start_system_monitoring()
+
+    def start_system_monitoring(self):
+        """
+        Постоянное обновление системных данных.
+        """
+        interval = self.interval_spinbox.value() * 1000  # Интервал обновления (мс)
+        self.update_timer.start(interval)
+
     def start_monitoring(self):
         """
-        Запуск мониторинга.
+        Запуск записи в БД.
         """
+        self.is_recording = True
         self.start_button.setVisible(False)
         self.stop_button.setVisible(True)
-        self.interval_label.setVisible(False)
-        self.interval_spinbox.setVisible(False)
-
-        self.cpu_label.setVisible(True)
-        self.ram_label.setVisible(True)
-        self.disk_label.setVisible(True)
-
         self.start_time = QTime(0, 0)
-        self.timer.start(1000)  # Таймер для обновления времени
-
-        # Устанавливаем интервал обновления данных системы
-        interval = self.interval_spinbox.value() * 1000
-        self.update_timer.start(interval)
+        self.timer.start(1000)  # Таймер для отображения времени записи
 
     def stop_monitoring(self):
         """
-        Остановка мониторинга.
+        Остановка записи в БД.
         """
+        self.is_recording = False
         self.timer.stop()
-        self.update_timer.stop()
         self.timer_label.setText("00:00")
-
         self.start_button.setVisible(True)
         self.stop_button.setVisible(False)
-        self.interval_label.setVisible(True)
-        self.interval_spinbox.setVisible(True)
-
-        self.cpu_label.setVisible(False)
-        self.ram_label.setVisible(False)
-        self.disk_label.setVisible(False)
 
     def update_timer(self):
         """
@@ -145,7 +136,7 @@ class MainWindow(QMainWindow):
 
     def update_system_stats(self):
         """
-        Обновление значений CPU, RAM и Disk, а также запись в БД.
+        Обновление значений CPU, RAM и Disk.
         """
         cpu_load = psutil.cpu_percent()
         ram = psutil.virtual_memory()
@@ -160,5 +151,6 @@ class MainWindow(QMainWindow):
         self.ram_label.setText(f"ОЗУ: {ram_used}MB/{ram.total // (1024 * 1024)}MB")
         self.disk_label.setText(f"ПЗУ: {disk_used}MB/{disk.total // (1024 * 1024)}MB")
 
-        # Сохранение данных в БД
-        asyncio.create_task(record_to_db(cpu_load, ram_used, disk_used))
+        # Если запись активна, сохраняем данные в БД
+        if self.is_recording:
+            asyncio.create_task(record_to_db(cpu_load, ram_used, disk_used))
