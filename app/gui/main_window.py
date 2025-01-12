@@ -4,7 +4,15 @@ from pathlib import Path
 import psutil
 
 from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QMainWindow, QPushButton, QLabel, QVBoxLayout, QWidget, QHBoxLayout, QSpinBox
+from PyQt6.QtWidgets import (
+    QMainWindow,
+    QPushButton,
+    QLabel,
+    QVBoxLayout,
+    QWidget,
+    QHBoxLayout,
+    QSpinBox,
+)
 from PyQt6.QtCore import QTimer, QTime
 
 from app.db.database import record_to_db
@@ -15,6 +23,7 @@ icon_path = os.path.join(BASE_DIR, "static", "history_icon.png")
 
 print("Icon path:", icon_path)
 
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -22,13 +31,15 @@ class MainWindow(QMainWindow):
         self.setGeometry(100, 100, 500, 300)
 
         # Устанавливаем стиль всему окну:
-        self.setStyleSheet("""
+        self.setStyleSheet(
+            """
             QLabel {
                 font-family: "Arial";
                 font-size: 24px;
                 color: #0a9ba4;
             }
-        """)
+        """
+        )
         self.main_layout = QVBoxLayout()
 
         top_layout = QHBoxLayout()
@@ -138,7 +149,7 @@ class MainWindow(QMainWindow):
         """
         cpu_load = psutil.cpu_percent()
         ram = psutil.virtual_memory()
-        disk = psutil.disk_usage('/')
+        disk = psutil.disk_usage("/")
 
         # Вычисляем занятые ресурсы
         ram_used = (ram.total - ram.available) // (1024 * 1024)  # В MB

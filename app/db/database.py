@@ -19,8 +19,12 @@ async def get_db():
 
 async def record_to_db(cpu_load, ram_load, disk_load):
     async with async_session_maker() as session:
-        new_record = SystemLoad(cpu_load=cpu_load, ram_load=ram_load,
-                                disk_load=disk_load, timestamp=datetime.datetime.now())
+        new_record = SystemLoad(
+            cpu_load=cpu_load,
+            ram_load=ram_load,
+            disk_load=disk_load,
+            timestamp=datetime.datetime.now(),
+        )
         session.add(new_record)
         await session.commit()
 
@@ -32,4 +36,7 @@ async def fetch_history():
     async with async_session_maker() as session:
         result = await session.execute(select(SystemLoad))
         records = result.scalars().all()
-        return [(rec.id, rec.cpu_load, rec.ram_load, rec.disk_load, rec.timestamp) for rec in records]
+        return [
+            (rec.id, rec.cpu_load, rec.ram_load, rec.disk_load, rec.timestamp)
+            for rec in records
+        ]

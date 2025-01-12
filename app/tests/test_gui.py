@@ -2,6 +2,7 @@ import pytest
 from PyQt6.QtCore import Qt
 from app.gui.main_window import MainWindow
 
+
 @pytest.fixture
 def main_window(qtbot):
     """Фикстура для создания окна MainWindow и добавления его в qtbot."""
@@ -10,18 +11,22 @@ def main_window(qtbot):
     window.show()
     return window
 
+
 def test_main_window_is_visible(main_window):
     """Проверяем, что окно вообще показывается."""
     assert main_window.isVisible()
+
 
 def test_history_button_is_present(main_window):
     """Проверяем, что кнопка history присутствует."""
     assert main_window.history_button is not None
     assert main_window.history_button.isVisible()
 
+
 def test_default_interval_value(main_window):
     """Проверяем, что QSpinBox для интервала по умолчанию = 1."""
     assert main_window.interval_spinbox.value() == 1
+
 
 def test_start_stop_monitoring(qtbot, main_window):
     """

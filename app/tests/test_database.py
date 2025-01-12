@@ -20,8 +20,9 @@ async def setup_test_db():
     TEST_DATABASE_URL = "postgresql+asyncpg://user:123@localhost:5432/mydb"
     test_engine = create_async_engine(TEST_DATABASE_URL, echo=True)
 
-
-    TestSessionLocal = sessionmaker(bind=test_engine, expire_on_commit=False, class_=AsyncSession)
+    TestSessionLocal = sessionmaker(
+        bind=test_engine, expire_on_commit=False, class_=AsyncSession
+    )
 
     yield (TestSessionLocal, test_engine)
 

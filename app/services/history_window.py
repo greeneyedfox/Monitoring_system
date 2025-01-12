@@ -16,7 +16,9 @@ class HistoryWindow(QDialog):
         # Таблица для отображения данных
         self.table = QTableWidget()
         self.table.setColumnCount(5)
-        self.table.setHorizontalHeaderLabels(["ID", "CPU Load", "RAM Load", "Disk Load", "Timestamp"])
+        self.table.setHorizontalHeaderLabels(
+            ["ID", "CPU Load", "RAM Load", "Disk Load", "Timestamp"]
+        )
 
         # Добавляем таблицу в Layout
         layout.addWidget(self.table)
@@ -34,7 +36,9 @@ class HistoryWindow(QDialog):
             self.table.setRowCount(len(history))
             for row_index, row_data in enumerate(history):
                 for col_index, value in enumerate(row_data):
-                    self.table.setItem(row_index, col_index, QTableWidgetItem(str(value)))
+                    self.table.setItem(
+                        row_index, col_index, QTableWidgetItem(str(value))
+                    )
         except Exception as e:
             print(f"Ошибка при загрузке данных: {e}")
 
